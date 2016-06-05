@@ -13,18 +13,20 @@ function [cost,grad] = sparseAutoencoderCost(theta, visibleSize, hiddenSize, ...
 % We first convert theta to the (W1, W2, b1, b2) matrix/vector format, so that this 
 % follows the notation convention of the lecture notes. 
 
-W1 = reshape(theta(1:hiddenSize*visibleSize), hiddenSize, visibleSize);
-W2 = reshape(theta(hiddenSize*visibleSize+1:2*hiddenSize*visibleSize), visibleSize, hiddenSize);
-b1 = theta(2*hiddenSize*visibleSize+1:2*hiddenSize*visibleSize+hiddenSize);
-b2 = theta(2*hiddenSize*visibleSize+hiddenSize+1:end);
+
+%data: 64*1000
+W1 = reshape(theta(1:hiddenSize*visibleSize), hiddenSize, visibleSize);%25*64 
+W2 = reshape(theta(hiddenSize*visibleSize+1:2*hiddenSize*visibleSize), visibleSize, hiddenSize);%64*25
+b1 = theta(2*hiddenSize*visibleSize+1:2*hiddenSize*visibleSize+hiddenSize);%25*1
+b2 = theta(2*hiddenSize*visibleSize+hiddenSize+1:end);%62*1
 
 % Cost and gradient variables (your code needs to compute these values). 
 % Here, we initialize them to zeros. 
 cost = 0;
-W1grad = zeros(size(W1)); 
-W2grad = zeros(size(W2));
-b1grad = zeros(size(b1)); 
-b2grad = zeros(size(b2));
+W1grad = zeros(size(W1)); %25*64
+W2grad = zeros(size(W2));%64*26
+b1grad = zeros(size(b1)); %25*1
+b2grad = zeros(size(b2));%64*1
 
 %% ---------- YOUR CODE HERE --------------------------------------
 %  Instructions: Compute the cost/optimization objective J_sparse(W,b) for the Sparse Autoencoder,
@@ -42,10 +44,14 @@ b2grad = zeros(size(b2));
 % the gradient descent update to W1 would be W1 := W1 - alpha * W1grad, and similarly for W2, b1, b2. 
 % 
 
+%隐藏层的节点输出
 
-
-
-
+for i=1:1:size(data,2)
+    sample=data(:,1)
+    dataHidden=sigmoid(W1*sample); %25*1000
+    dataOutput=sigmoid(W2*dataHidden);%64*1000
+    error=sample-dataOutput;%64*1000 误差
+end
 
 
 
