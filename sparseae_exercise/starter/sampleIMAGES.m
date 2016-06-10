@@ -41,11 +41,6 @@ end
 
 
 
-
-
-
-
-
 %% ---------------------------------------------------------------
 % For the autoencoder to work well we need to normalize the data
 % Specifically, since the output of the network is bounded between [0,1]

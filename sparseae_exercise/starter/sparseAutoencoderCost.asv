@@ -58,8 +58,8 @@ for i=1:1:size(data,2)
     sita_up_3=error.*sigmoid_derivative(z_up_3);%输出层的值,sita调整
     sita_up_2=W2'*sita_up_3.*sigmoid_derivative(z_up_2); %隐藏层的sita调整
     
-    radaJ_div_radaW_up_2=sita_up_3*a_up_2';
-    radaJ_div_radaW_up_1=sita_up_2*x';
+    radaJ_div_radaW_up_2=a_up_2'*sita_up_3;
+    radaJ_div_radaW_up_1=
     
     
 end
