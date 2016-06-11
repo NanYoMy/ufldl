@@ -13,7 +13,6 @@ function [cost,grad] = sparseAutoencoderCost(theta, visibleSize, hiddenSize, ...
 % We first convert theta to the (W1, W2, b1, b2) matrix/vector format, so that this 
 % follows the notation convention of the lecture notes. 
 
-
 %data: 64*1000
 W1 = reshape(theta(1:hiddenSize*visibleSize), hiddenSize, visibleSize);%25*64 
 W2 = reshape(theta(hiddenSize*visibleSize+1:2*hiddenSize*visibleSize), visibleSize, hiddenSize);%64*25
@@ -45,31 +44,87 @@ b2grad = zeros(size(b2));%64*1
 % 
 
 %隐藏层的节点输出
+% m=10;
+% 
+% for i=1:m:size(data,2)
+% 
+%     deltaW_up_2=zeros(size(W2));
+%     deltaB_up_2=zeros(size(b2));
+%     
+%     deltaW_up_1=zeros(size(W1));
+%     deltaB_up_1=zeros(size(b1));
+%     for j=i:1:i+m-1
+%         %样本，单个进行训练
+%         x=data(:,j);
+%         a_up_2=W1*x;
+%         z_up_2=sigmoid(a_up_2); %25*1000
+%         a_up_3=W2*z_up_2;
+%         z_up_3=sigmoid(a_up_3);%64*1000
+%         error=z_up_3-x;%64*1000 误差
+%         sita_up_3=error.*sigmoid_derivative(z_up_3);%输出层的值,sita调整
+%         sita_up_2=W2'*sita_up_3.*sigmoid_derivative(z_up_2); %隐藏层的sita调整
+%         %
+%         radaJ_div_radaW_up_2=sita_up_3*a_up_2';
+%         deltaW_up_2=deltaW_up_2+radaJ_div_radaW_up_2;
+%        
+%         radaJ_div_radaB_up_2=sita_up_3;
+%         deltaB_up_2=deltaB_up_2+radaJ_div_radaB_up_2;
+%         
+%         radaJ_div_radaW_up_1=sita_up_2*x';
+%         deltaW_up_1=deltaW_up_1+radaJ_div_radaW_up_1;
+%         
+%         radaJ_div_radaB_up_1=sita_up_2;
+%         deltaB_up_1=deltaB_up_1+radaJ_div_radaB_up_1;
+%         
+%     end
+%     
+%     W2=W2-alpha*((1/m*deltaW_up_2)+lambda*W2);
+%     b2=b2-alpha*(1/m*deltaB_up_2);
+%     
+%     W1=W1-alpha*((1/m*deltaW_up_1)+lambda*W1);
+%     b1=b1-alpha*(1/m*deltaB_up_1);
+%     
+% end
 
+
+    deltaW_up_2=zeros(size(W2));
+    deltaB_up_2=zeros(size(b2));
+    
+    deltaW_up_1=zeros(size(W1));
+    deltaB_up_1=zeros(size(b1));
+    m=size(data,2);
 for i=1:1:size(data,2)
-    
-    %样本，单个进行训练
-    x=data(:,1);
-    a_up_2=W1*x;
-    z_up_2=sigmoid(a_up_2); %25*1000
-    a_up_3=W2*z_up_2;
-    z_up_3=sigmoid(a_up_3);%64*1000
-    error=z_up_3-x;%64*1000 误差
-    sita_up_3=error.*sigmoid_derivative(z_up_3);%输出层的值,sita调整
-    sita_up_2=W2'*sita_up_3.*sigmoid_derivative(z_up_2); %隐藏层的sita调整
-    
-    radaJ_div_radaW_up_2=sita_up_3*a_up_2';
-    radaJ_div_radaW_up_1=sita_up_2*x';
-    
-    
+
+        %样本，单个进行训练
+        x=data(:,i);
+        z_up_2=W1*x;
+        a_up_2=sigmoid(z_up_2); %25*1000
+        z_up_3=W2*a_up_2;
+        a_up_3=sigmoid(z_up_3);%64*1000
+        error=a_up_3-x;%64*1000 误差
+        sita_up_3=error.*sigmoid_derivative(z_up_3);%输出层的值,sita调整
+        sita_up_2=W2'*sita_up_3.*sigmoid_derivative(z_up_2); %隐藏层的sita调整
+        %
+        radaJ_div_radaW_up_2=sita_up_3*a_up_2';
+        deltaW_up_2=deltaW_up_2+radaJ_div_radaW_up_2;
+       
+        radaJ_div_radaB_up_2=sita_up_3;
+        deltaB_up_2=deltaB_up_2+radaJ_div_radaB_up_2;
+        
+        radaJ_div_radaW_up_1=sita_up_2*x';
+        deltaW_up_1=deltaW_up_1+radaJ_div_radaW_up_1;
+        
+        radaJ_div_radaB_up_1=sita_up_2;
+        deltaB_up_1=deltaB_up_1+radaJ_div_radaB_up_1;
+   
 end
 
 
-
-
-
-
-
+   W2grad=(1/m*deltaW_up_2)+lambda*W2;
+   b2grad=1/m*deltaB_up_2;
+    
+    W1grad=(1/m*deltaW_up_1)+lambda*W1;
+    b1grad=1/m*deltaB_up_1;
 
 
 
