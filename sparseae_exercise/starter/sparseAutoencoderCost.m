@@ -93,6 +93,10 @@ b2grad = zeros(size(b2));%64*1
     deltaW_up_1=zeros(size(W1));
     deltaB_up_1=zeros(size(b1));
     m=size(data,2);
+    
+    rho_temp=sigmoid(data'*W1');
+    rho_hat=mean(rho_temp)';
+    
 for i=1:1:size(data,2)
 
         %样本，单个进行训练
@@ -103,8 +107,7 @@ for i=1:1:size(data,2)
         a_up_3=sigmoid(z_up_3);%64*1000
         error=a_up_3-x;%64*1000 误差
         sita_up_3=error.*sigmoid_derivative(z_up_3);%输出层的值,sita调整
-        sita_up_2=W2'*sita_up_3.*sigmoid_derivative(z_up_2); %隐藏层的sita调整
-        %
+        sita_up_2=(  W2'*sita_up_3+ beta.*((-sparsityParam./rho_hat)+(1-sparsityParam)./(1-rho_hat))  ).*sigmoid_derivative(z_up_2); %隐藏层的sita调整 
         radaJ_div_radaW_up_2=sita_up_3*a_up_2';
         deltaW_up_2=deltaW_up_2+radaJ_div_radaW_up_2;
        
