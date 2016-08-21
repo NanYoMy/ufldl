@@ -159,16 +159,6 @@ end
 % in your computation of the costs and the gradients.  This inputs a (row or
 % column) vector (say (z1, z2, z3)) and returns (f(z1), f(z2), f(z3)). 
 
-function out=kldiverge(rho,sparsityParam)
-
-out=sparsityParam*log(sparsityParam/rho)+(1-sparsityParam)*log((1-sparsityParam)/(1-rho));
 
 
-end
-
-function a=test()
-    % ¼ì²ésigmoid
-    a=(sigmoid(0.5+0.0001)- sigmoid(0.5-0.0001))/0.0002
-    b=sigmoid_derivative(0.5)
-end
 
