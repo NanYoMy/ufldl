@@ -17,14 +17,13 @@ numgrad = zeros(size(theta));
 % respect to theta(i).
 %                
 % Hint: You will probably want to compute the elements of numgrad one at a time. 
-epsilon = 10^-4;
-tmp=theta;
-for i=1:1:size(theta)
-    right=theta;
-    right(i)=right(i)+epsilon;
-    left=theta;
-    left(i)=left(i)-epsilon;
-    numgrad(i) = (J(right) - J(left)) / 2 / epsilon;
+
+
+
+
+
+
+
 
 %% ---------------------------------------------------------------
 end
