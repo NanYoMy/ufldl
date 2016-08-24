@@ -62,7 +62,7 @@ z2=W1*a1+repmat(b1,1,sampleNum);
 a2=sigmoid(z2);
 z3=W2*a2+repmat(b2,1,sampleNum);
 a3=sigmoid(z3);
-%cnn的误差
+%auto sparse encoder的误差
 rho_j=sum(a2,2)/sampleNum;
 cost=1/sampleNum*0.5*sum(sum((data-a3).^2))+lambda/2*(sum(sum(W1.^2))+sum(sum(W2.^2)))+beta*sum(rho*log(rho./rho_j)+(1-rho)*log((1-rho)./(1-rho_j)));
 
@@ -71,39 +71,58 @@ deltaW_up_2=zeros(size(W2));
 deltaB_up_2=zeros(size(b2));    
 deltaW_up_1=zeros(size(W1));
 deltaB_up_1=zeros(size(b1));
-m=size(data,2);    
-rho_temp=sigmoid(data'*W1');
-rho_hat=mean(rho_temp)';
-    
-for i=1:1:size(data,2)
-        %样本，单个进行训练
-        x=data(:,i);
-        z_up_2=W1*x+b1;
-        a_up_2=sigmoid(z_up_2); %25*1000
-        z_up_3=W2*a_up_2+b2;
-        a_up_3=sigmoid(z_up_3);%64*1000
-        error=a_up_3-x;%64*1000 误差
-        sita_up_3=error.*sigmoid_derivative(z_up_3);%输出层的值,sita调整
-        sita_up_2=(W2'*sita_up_3+ beta.*(((-sparsityParam)./rho_j)+(1-sparsityParam)./(1-rho_j))  ).*sigmoid_derivative(z_up_2); %隐藏层的sita调整 
-        radaJ_div_radaW_up_2=sita_up_3*a_up_2';
-        deltaW_up_2=deltaW_up_2+radaJ_div_radaW_up_2;
-       
-        radaJ_div_radaB_up_2=sita_up_3;
-        deltaB_up_2=deltaB_up_2+radaJ_div_radaB_up_2;
-        
-        radaJ_div_radaW_up_1=sita_up_2*x';
-        deltaW_up_1=deltaW_up_1+radaJ_div_radaW_up_1;
-        
-        radaJ_div_radaB_up_1=sita_up_2;
-        deltaB_up_1=deltaB_up_1+radaJ_div_radaB_up_1;
-   
+m=size(data,2);
+
+sita3=(a3-data).*sigmoid_derivative(z3);
+sita2=(W2'*sita3+ repmat(beta.*(((-sparsityParam)./rho_j)+(1-sparsityParam)./(1-rho_j)) ,1,m )).*sigmoid_derivative(z2);
+
+deltaB_up_2=mean(sita3,2);
+deltaB_up_1=mean(sita2,2);
+
+%deltaW_up_2=sita3*a2';
+%deltaW_up_1=sita2*a1';
+
+for i = 1 : sampleNum
+    deltaW_up_1 = deltaW_up_1 + sita2(:,i) * a1(:,i)'; % 25 * 10000 * 10000 * 64 = 25 * 64
+    deltaW_up_2 = deltaW_up_2 + sita3(:,i) * a2(:,i)'; %  64 * 10000 * 10000 * 25 = 64 * 25
 end
 
-   W2grad=(1/m*deltaW_up_2)+lambda*W2;
-   b2grad=1/m*deltaB_up_2;
-    W1grad=(1/m*deltaW_up_1)+lambda*W1;
-    b1grad=1/m*deltaB_up_1;
-grad = [W1grad(:) ; W2grad(:) ; b1grad(:) ; b2grad(:)];
+W2grad=(deltaW_up_2/sampleNum)+lambda*W2;
+b2grad=deltaB_up_2;
+W1grad=(deltaW_up_1/sampleNum)+lambda*W1;
+b1grad=deltaB_up_1;
+
+
+% for i=1:1:size(data,2)
+%         %样本，单个进行训练
+%         x=data(:,i);
+%         z_up_2=W1*x+b1;
+%         a_up_2=sigmoid(z_up_2); %25*1000
+%         z_up_3=W2*a_up_2+b2;
+%         a_up_3=sigmoid(z_up_3);%64*1000
+%         error=a_up_3-x;%64*1000 误差
+%         sita_up_3=error.*sigmoid_derivative(z_up_3);%输出层的值,sita调整
+%         sita_up_2=(W2'*sita_up_3+ beta.*(((-sparsityParam)./rho_j)+(1-sparsityParam)./(1-rho_j))  ).*sigmoid_derivative(z_up_2); %隐藏层的sita调整 
+%         radaJ_div_radaW_up_2=sita_up_3*a_up_2';
+%         deltaW_up_2=deltaW_up_2+radaJ_div_radaW_up_2;
+%        
+%         radaJ_div_radaB_up_2=sita_up_3;
+%         deltaB_up_2=deltaB_up_2+radaJ_div_radaB_up_2;
+%         
+%         radaJ_div_radaW_up_1=sita_up_2*x';
+%         deltaW_up_1=deltaW_up_1+radaJ_div_radaW_up_1;
+%         
+%         radaJ_div_radaB_up_1=sita_up_2;
+%         deltaB_up_1=deltaB_up_1+radaJ_div_radaB_up_1;
+%    
+% end
+% W2grad=(1/m*deltaW_up_2)+lambda*W2;
+% b2grad=1/m*deltaB_up_2;
+% W1grad=(1/m*deltaW_up_1)+lambda*W1;
+% b1grad=1/m*deltaB_up_1;
+
+
+
 %%%
 %这个是正确的版本，
 %%%
@@ -145,12 +164,12 @@ grad = [W1grad(:) ; W2grad(:) ; b1grad(:) ; b2grad(:)];
 % W2grad = W2grad + lambda * W2;
 % b1grad = sum(delta2') / sampleNum;
 % b2grad = sum(delta3') / sampleNum;
-%-------------------------------------------------------------------
+% -------------------------------------------------------------------
 % After computing the cost and gradient, we will convert the gradients back
 % to a vector format (suitable for minFunc).  Specifically, we will unroll
 % your gradient matrices into a vector.
 
-
+grad = [W1grad(:) ; W2grad(:) ; b1grad(:) ; b2grad(:)];
 
 end
 
@@ -159,16 +178,6 @@ end
 % in your computation of the costs and the gradients.  This inputs a (row or
 % column) vector (say (z1, z2, z3)) and returns (f(z1), f(z2), f(z3)). 
 
-function out=kldiverge(rho,sparsityParam)
-
-out=sparsityParam*log(sparsityParam/rho)+(1-sparsityParam)*log((1-sparsityParam)/(1-rho));
 
 
-end
-
-function a=test()
-    % 检查sigmoid
-    a=(sigmoid(0.5+0.0001)- sigmoid(0.5-0.0001))/0.0002
-    b=sigmoid_derivative(0.5)
-end
 
